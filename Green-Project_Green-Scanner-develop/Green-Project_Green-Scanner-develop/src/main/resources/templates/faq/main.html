@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="fragments/qna_head :: qna_head('FAQ | 자주 묻는 질문')">
+<body>
+	<nav th:replace="fragments/common.html :: nav-top"></nav>
+	<!-- 밑줄: 디자인 요소 다운하여 사용 -->
+	<div class="nav-border"></div>
+	<!-- Content 영역 -->
+	<div class="board-cont-body">
+		<div class="board-cont-wrapper">
+			<!-- 페이지 제목 영역 -->
+			<div class="board-cont-top">
+				<div class=board-cont-top-main>
+					<span class="board-cont-top-title">FAQ | 자주 묻는 질문</span>
+					<input type="hidden" id = sessionNickname th:value="${session.memnickname}">
+				</div>
+			</div>
+			<div class="content-border"></div>
+			<!-- 게시글 리스트 영역 -->
+			<div class="Section">
+				<div class="Post_wrapper">
+					<div class="ContentBox" th:each="post:${postList}">
+						<a class="link" id="index" th:attrappend="id=${postStat.index}"
+						   name="postno" th:href="@{/faq/viewpost(postno=${post.postno})}">
+							<div class="Post_title" th:text="${post.title}"></div>
+							<div class="Post_content" th:text="${post.content}"></div>
+							<div class="Post_etc">
+								<div class="Nickname">
+									<img class="img_16" src="../img/board/User.png"> <label
+										class="text" th:if="${post.isanon} == 0"
+										th:text="${post.nickname}"></label> <label class="text"
+																					th:if="${post.isanon} == 1">익명</label>
+								</div>
+								<div class="Post_date"
+									 th:text="${#dates.format(post.postdate, 'yyyy-MM-dd HH시 mm분')}"></div>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div th:replace="/fragments/common.html :: new-footer"></div>
+</body>
+</html>

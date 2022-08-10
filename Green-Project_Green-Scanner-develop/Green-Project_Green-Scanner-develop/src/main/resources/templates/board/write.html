@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="fragments/board_head :: head('글쓰기')">
+</head>
+<body>
+	<nav th:replace="fragments/common.html :: nav-top"></nav>
+	<!-- 밑줄: 디자인 요소 다운하여 사용 -->
+	<div class="nav-border"></div>
+
+	<!-- Content 영역 -->
+	<div class="board-cont-body">
+		<div class="board-cont-wrapper">
+			<!-- 페이지 제목 영역 -->
+			<div class="board-cont-top">
+				<div class="board-cont-top-main">
+					<span class="board-cont-top-title">글쓰기</span> <input type="hidden"
+						id=sessionNickname th:value="${session.memnickname}">
+				</div>
+			</div>
+			<div class="content-border"></div>
+
+			<!-- 글쓰기 폼 영역 -->
+
+			<form action="/board/write" method="post"
+				enctype="multipart/form-data" onsubmit="return writePost();">
+				<div class="Write_form">
+					<div class="board-cont-write-top-main">
+						<div class="Post_title">
+							<div class="write_label">제목</div>
+							<input type="text" class="input_title" name="title" id="title"
+								placeholder="제목을 입력해주세요">
+						</div>
+						<div class="Post_boardType">
+							<div class="write_label">게시판 구분</div>
+							<div class="">
+								<select class="select_boardType" name="boardname" id="boardname">
+									<option class="select_boardType" th:selected ="${boardname}=='자유게시판'" value="자유게시판">자유게시판</option>
+									<option class="select_boardType" th:selected ="${boardname}=='질문게시판'" value="질문게시판">질문게시판</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="board-write-anon">
+						<input class="align-right" type="checkbox" name="isanon" value="1"><label
+							class="write_label">익명</label>
+					</div>
+					<div class="board-write-content">
+						<div class="write_label">내용</div>
+						<textarea name="content" id="content"
+							class="board-write-content-input" onkeyup="fn_checkByte(this)" placeholder="내용을 입력해주세요"></textarea>
+						<sup>(<span id="nowByte">0</span>/1000bytes)</sup>
+					</div>
+					<div class="file-upload preview-image mt-20" style="height: 40px;">
+							<label for="input">
+							<img src="../img/board/Insert-photo.png"></label> 
+							<input type="text" class="upload-name" disabled="disabled"> 
+							<input accept="image/*" type="file" id="input" name="file" class="upload-hidden">
+						
+					</div>
+					<div class="board-write-btn-group">
+						<input type="hidden" name="_csrf" th:value="${token}"> <input
+							type="button" class="Btn_cancle" id="cancleBtn" value="취소"> <input
+							type="submit" class="Btn_submit" id="registerPostBtn" value="등록">
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+</html>

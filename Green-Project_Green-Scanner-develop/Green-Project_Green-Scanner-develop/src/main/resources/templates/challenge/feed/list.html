@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/fragments/common.html :: header('피드 모아보기')">
+<body>
+	<nav th:replace="fragments/common.html :: nav-top"></nav>
+	<!-- content 영역 -->
+	<div class="chall-cont-body">
+		<div class="chall-cont-wrapper">
+			<div class="chall-cont-top">
+				<div class="chall-main-link"><a href="/challenge/main"><img src="/img/challenge/home.png">챌린지 홈</a></div>
+				<span class="chall-cont-top-title">피드 모아보기</span>
+			</div>
+			<!-- feed list border -->
+			<div class="content-border"></div>
+			<!-- 리스트가 존재하지 않을 때 -->
+			<div class="chall-cont-no-feed-wrapper" th:if="${#lists.isEmpty(feedList)}">
+				<div class="chall-cont-no-feed">
+					<span class="empty-space-text">아직 등록된 피드가 없습니다.</span>
+				</div>
+			</div>
+			<!-- 리스트가 존재할 때 -->
+			<div class="chall-cont-feed-wrapper" th:unless="${#lists.isEmpty(feedList)}">
+				<div class="chall-cont-feed" th:each="feed : ${feedList}">
+					<div class="feed-top">
+						<div class="feed-top-left">
+							<div class="feed-top-icon">
+								<img src="/img/profile.png">
+							</div>
+							<div class="feed-top-text">
+								<span class="feed-top-nickname" th:text="${feed.writer}"></span>
+								<span class="feed-top-post-time" th:text="${#dates.format(feed.postTime, 'yyyy/MM/dd HH시 mm분')}"></span>
+							</div>
+						</div>
+						<div class="feed-top-right">
+							<div class="chall-feed-dropdown">
+								<div class="feed-top-chall-name" th:text="${feed.challengeName}">챌린지명(예정)</div>
+								<div class="feed-3dots-submenu" th:id="|feed-3dots-submenu-${idx}-${feedStat.index}|">	
+									<a	id="feed-edit-btn" 
+										th:href="@{'/challenge/feed/' + ${feed.challengeNum} +'/set' (feedNo = ${feed.feedNo})}">수정</a>
+									<form
+										id="chall-delete-form"
+										onsubmit="return fn_feed_delete_confirm()"
+										th:action="@{/challenge/feed/{challengeNum}/{feedNo} (challengeNum = ${feed.challengeNum}, feedNo = ${feed.feedNo})}"
+										th:method="delete">
+										<input type="submit" value="삭제" />
+									</form>
+								</div>	
+							</div>
+							<label th:for="|${idx}-${feedStat.index}|" class="chall-feed-3dots-label" th:if="${nickname} and ${nickname == feed.writer}">
+								<img class="3dots-label-img" th:id="|${idx}-${feedStat.index}|" src="/img/challenge/3dots.png"></img>
+							</label>	
+						</div>
+					</div>
+					<div class="feed-cont">
+						<div class="swiper swiper-chall-list">
+							<div class="swiper-wrapper">								
+								<div th:each="idx, stat : ${feed.imageIdxs}" class="swiper-slide" th:id="|slide-img-${stat.index}|">
+									<img class="feed-images" th:src="|/challenge/feed/${feed.feedNo}/img/${idx}|">
+								</div>								
+							</div>
+							<div class="swiper-pagination"></div>
+							<div class="swiper-button-prev"></div>
+							<div class="swiper-button-next"></div>
+						</div>
+					</div>
+					<div class="feed-cont-text">
+						<a th:href="@{|/feed/${feed.feedNo}/comments| (challengeNum = ${feed.challengeNum})}" th:text="${feed.content}"></a>
+					</div>
+					<div class="feed-cmt">
+						<div class="feed-cmt-div">
+							<a class="feed-cmt-link" th:href="@{|/feed/${feed.feedNo}/comments| (challengeNum = ${feed.challengeNum})}">
+								<img src="/img/comment.png">
+								<span th:text="|${feed.commentCnt}개 댓글 모두 보기|"></span>
+							</a>	
+						</div>
+						<div class="feed-cmt-preview"></div>
+					</div>
+				</div>
+			</div>
+			<div class="chall-cont-btn" th:unless="${#lists.isEmpty(feedList)}">
+				<button id="chall-more-btn" th:if="${totalFeedCnt > 5}">더 보기</button>
+			</div>
+		</div>
+	</div>
+	<div th:replace="/fragments/common.html :: new-footer"></div>
+	
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+			const requestPage = "all";
+			const challengeNum = null;
+			const totalFeedCnt = /*[[ ${totalFeedCnt} ]]*/;
+		 	var startIdx = 1;
+		 	var searchStep = 5;
+		 	
+		 	const swiper = new Swiper('.swiper', {
+		 		pagination: {
+		 			el: '.swiper-pagination',
+		 		},
+		 		
+		 		navigation: {
+		 			nextEl: '.swiper-button-next',
+		 			prevEl: '.swiper-button-prev',
+		 		},
+		 	});
+		 	
+		 	var menu;
+		 	var pointId;
+		 	$('body').click(function(e) {		
+	 			chall_toggle(e);
+	 		});
+		 	
+		 	$('#chall-more-btn').click(function() {
+		 		startIdx += searchStep;
+		 		more_feed(startIdx, requestPage, challengeNum);
+		 	});
+		 	
+	 	/*]]>*/
+	</script>
+</body>
+</html>

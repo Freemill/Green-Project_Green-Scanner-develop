@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/fragments/common.html :: header('마이 챌린지')">
+<body>
+	<nav th:replace="fragments/common.html :: nav-top"></nav>
+	<!-- content 영역 -->
+	<div class="chall-cont-body">
+		<div class="chall-cont-wrapper">
+			<div class="chall-cont-top">
+				<div class="chall-main-link"><a href="/challenge/main"><img src="/img/challenge/home.png">챌린지 홈</a></div>
+				<div class="chall-cont-top-my-detail">
+					<span class="chall-cont-top-title" th:text="${personalChallenge.challengeName}"></span>
+					<div class="my-detail-btns" th:if="${personalChallenge.isCompleted} == 0">
+						<div class="my-detail-dropdown">
+							<a
+							class="my-detail-btn-feed-write"
+							th:data-cNum="${personalChallenge.challengeNum}"
+							onclick="return fn_feed_duplicate_check(this.getAttribute('data-cNum'))" 
+							th:href="@{/challenge/feed/{challengeNum}/set (challengeNum = ${personalChallenge.challengeNum})}">
+							피드쓰기</a>						
+							<div class="my-detail-dropdown-submenu">
+								<a
+								class="my-detail-btn-feed-edit"
+								th:href="@{/challenge/my-challenge/{challengeNum}/edit (challengeNum = ${personalChallenge.challengeNum})}">
+								챌린지수정</a>
+								<form
+									id="my-detail-delete-form"
+									onsubmit="return fn_delete_confirm()"
+									th:action="@{/challenge/my-challenge/{challengeNum} (challengeNum = ${personalChallenge.challengeNum})}" 
+									th:method="delete">
+									<input class="my-detail-btn-feed-delete" type="submit" value="챌린지삭제">	
+								</form>
+							</div>
+						</div>
+						<label for="my-detail-3dots" class="chall-feed-3dots-label">
+							<img class="3dots-label-img" id="my-detail-3dots" src="/img/challenge/3dots.png"></img>
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="content-border"></div>
+			<div class="chall-cont-my-detail-wrapper">
+				<span class="chall-cont-min-title">진행 현황</span>
+				<div class="my-detail-achiv-rate-area">
+					<span class="my-detail-achiv-text">달성률</span>
+					<span class="my-detail-achiv-rate" th:text="|${personalChallenge.achievementRate}%|"></span>
+				</div>					
+				<div class="my-detail-calendar-area">
+					<div class="my-detail-calendar-week" th:each="weeks : ${personalChallenge.calList}">
+						<span 
+							class="my-detail-calendar-day"
+							th:each="days : ${weeks}"
+							th:style="${days} == '0' ? 'background-color: #eef6f6' : 'background-color: ' + ${personalChallenge.colorCode}">
+						</span>
+					</div>
+				</div>
+				<div class="my-detail-info">
+					<div class="my-detail-info-left">
+						<table class="my-detail-left-table">
+							<tr><td class="my-detail-head">기간</td><td th:text="|${personalChallenge.period}일|"></td></tr>
+							<tr><td class="my-detail-head">남은일수</td><td th:text="|${personalChallenge.daysRemained}일|"></td></tr>
+							<tr><td class="my-detail-head">실천횟수</td><td th:text="|${personalChallenge.executionNum}회|"></td></tr>
+						</table>
+					</div>
+					<div class="my-detail-info-right">
+						<table class="my-detail-right-table">
+							<tr><td class="my-detail-head">완료여부</td>
+								<td th:if="${personalChallenge.isCompleted} == 1"><span class="my-detail-completed">완료</span></td>
+								<td th:unless="${personalChallenge.isCompleted} == 1"><span class="my-detail-proceeding">진행 중</span>
+							</tr>
+							<tr><td class="my-detail-head">시작일</td><td th:text="${personalChallenge.startDate}"></td></tr>
+							<tr><td class="my-detail-head">종료일</td><td th:text="${personalChallenge.endDate}"></td></tr>
+						</table>
+					</div>
+				</div>
+				<div class="chall-cont-min-border"></div>
+				<div class="basic-detail">
+					<div class="basic-detail-description"></div>
+				</div>
+				<div class="chall-cont-min-border"></div>
+				<span class="chall-cont-min-title">실천 피드</span>
+				<!-- 리스트가 존재하지 않을 때 -->
+				<div th:if="${#lists.isEmpty(feedList)}" class="chall-cont-no-feed">
+					<span id="chall-no-list">아직 등록된 피드가 없습니다</span>
+					<span id="chall-no-list">오늘 챌린지를 잘 실천했다면 지금 바로 피드를 등록하세요!</span>
+				</div>
+				<!-- 리스트가 존재할 때 -->
+				<div  class="chall-cont-feed-wrapper" th:unless="${#lists.isEmpty(feedList)}">
+					<div class="chall-cont-feed" th:each="feed : ${feedList}">
+						<div class="feed-top">
+							<div class="feed-top-left">
+								<div class="feed-top-icon">
+									<img src="/img/profile.png">
+								</div>
+								<div class="feed-top-text">
+									<span class="feed-top-nickname" th:text="${feed.writer}"></span>
+									<span class="feed-top-post-time" th:text="${#dates.format(feed.postTime, 'yyyy/MM/dd HH시 mm분')}"></span>
+								</div>
+							</div>
+							<div class="feed-top-right">
+								<div class="chall-feed-dropdown">
+									<div class="feed-top-chall-name" th:text="${feed.challengeName}">챌린지명(예정)</div>
+									<div class="feed-3dots-submenu" th:id="|feed-3dots-submenu-${idx}-${feedStat.index}|">	
+										<a	id="feed-edit-btn" 
+											th:href="@{'/challenge/feed/' + ${feed.challengeNum} +'/set' (feedNo = ${feed.feedNo})}">수정</a>
+										<form
+											id="chall-delete-form"
+											onsubmit="return fn_feed_delete_confirm()"
+											th:action="@{/challenge/feed/{challengeNum}/{feedNo} (challengeNum = ${feed.challengeNum}, feedNo = ${feed.feedNo})}"
+											th:method="delete">
+											<input type="submit" value="삭제" />
+										</form>
+									</div>	
+								</div>
+								<label th:for="|${idx}-${feedStat.index}|" class="chall-feed-3dots-label" th:if="${nickname} and ${nickname == feed.writer}">
+									<img class="3dots-label-img" th:id="|${idx}-${feedStat.index}|" src="/img/challenge/3dots.png"></img>
+								</label>	
+							</div>
+						</div>
+						<div class="feed-cont">
+							<div class="swiper swiper-chall-list">
+								<div class="swiper-wrapper">								
+									<div th:each="imageIdx, stat : ${feed.imageIdxs}" class="swiper-slide" th:id="|slide-img-${stat.index}|">
+										<img class="feed-images" th:src="|/challenge/feed/${feed.feedNo}/img/${imageIdx}|">
+									</div>								
+								</div>
+								<div class="swiper-pagination"></div>
+								<div class="swiper-button-prev"></div>
+								<div class="swiper-button-next"></div>
+							</div>
+						</div>
+						<div class="feed-cont-text">
+							<a th:href="@{|/feed/${feed.feedNo}/comments| (challengeNum = ${feed.challengeNum})}" th:text="${feed.content}"></a>
+						</div>
+						<div class="feed-cmt">
+							<div class="feed-cmt-div">
+								<a class="feed-cmt-link" th:href="@{|/feed/${feed.feedNo}/comments| (challengeNum = ${feed.challengeNum})}">
+									<img src="/img/comment.png">
+									<span th:text="|${feed.commentCnt}개 댓글 모두 보기|"></span>
+								</a>	
+							</div>
+							<div class="feed-cmt-preview"></div>
+						</div>
+					</div>
+				</div>
+				<div class="chall-cont-btn" th:unless="${#lists.isEmpty(feedList)}">
+					<button id="chall-more-btn" th:if="${myFeedCnt > 5}">더 보기</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div th:replace="/fragments/common.html :: new-footer"></div>
+	
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+			const html = /*[[${basicChallenge.toDo}]]*/;
+			const targetArea = $('.basic-detail-description');
+			targetArea.html(html);
+		
+			const requestPage = "my"
+			const challengeNum = /*[[ ${personalChallenge.challengeNum} ]]*/;
+			const totalFeedCnt = /*[[ ${myFeedCnt} ]]*/;
+		 	var startIdx = 1;
+		 	var searchStep = 5;
+		 	
+		 	const swiper = new Swiper('.swiper', {
+		 		pagination: {
+		 			el: '.swiper-pagination',
+		 		},
+		 		
+		 		navigation: {
+		 			nextEl: '.swiper-button-next',
+		 			prevEl: '.swiper-button-prev',
+		 		},
+		 	});
+		 	
+	 		var menu;
+	 		var pointId;
+	 		$('body').click(function(e) {		
+	 			chall_toggle(e);
+	 		});
+	 		
+		 	$('#chall-more-btn').click(function() {
+		 		startIdx += searchStep;
+		 		more_feed(startIdx, requestPage, challengeNum);
+		 	});	 	
+	 	/*]]>*/
+	</script>
+</body>
+</html>

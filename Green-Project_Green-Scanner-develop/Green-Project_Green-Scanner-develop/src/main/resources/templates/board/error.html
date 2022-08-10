@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="fragments/board_head :: head('그린스캐너')">
+</head>
+<body>
+	<nav th:replace="fragments/common.html :: nav-top"></nav>
+	<!-- 밑줄: 디자인 요소 다운하여 사용 -->
+	<div class="nav-border"></div>
+
+	<!-- Content 영역 -->
+	<div class="board-cont-body">
+		<div class="board-cont-wrapper">
+			<div class="board-cont-top">이용에 불편을 드려 죄송합니다. 다시 접속해 주세요. </div>
+		</div>
+	</div>
+	<div th:replace="/fragments/common.html :: new-footer"></div>
+</body>
+</html>

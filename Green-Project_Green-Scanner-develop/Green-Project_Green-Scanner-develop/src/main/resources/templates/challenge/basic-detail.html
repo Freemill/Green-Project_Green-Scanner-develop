@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/fragments/common.html :: header('챌린지 상세 내용')">
+<body>
+	<!-- 상단 nav -->
+	<nav th:replace="/fragments/common.html :: nav-top"></nav>
+	<!-- content 영역 -->
+	<div class="chall-cont-body">
+		<div class="chall-cont-wrapper">
+			<div class="chall-cont-top">
+				<div class="chall-main-link"><a href="/challenge/main"><img src="/img/challenge/home.png">챌린지 홈</a></div>
+				<span class="chall-cont-top-title" th:text="${basicChallenge.challengeName}"></span>
+			</div>
+			<div class="content-border"></div>
+			<div class="chall-cont-basic-detail">
+				<form
+					id="basic-detail-form"
+					th:data-code="${basicChallenge.challengeCode}"
+					onsubmit="return fn_duplicate_check(this.getAttribute('data-code'))" 
+					th:action="@{/challenge/basic/{challengeCode}/set (challengeCode=${basicChallenge.challengeCode})}">
+					<div class="basic-detail">
+						<div class="basic-detail-thumb-div">
+							<img th:if="${basicChallenge.mainImageURL}" class="basic-detail-thumb" th:src="${basicChallenge.mainImageURL}">
+						</div>
+						<div class="basic-detail-description"></div>
+					</div>	
+					<div class="chall-cont-min-border"></div>
+					<input id="basic-start-btn" type="submit" value="시작하기">
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- 하단 footer -->
+	<div th:replace="/fragments/common.html :: new-footer"></div>
+	
+	<script th:inline="javascript">
+	/*<![CDATA[*/
+		const html = /*[[${basicChallenge.toDo}]]*/;
+		const targetArea = $('.basic-detail-description');
+		targetArea.html(html);
+	/*]]>*/	
+	</script>
+</body>
+</html>

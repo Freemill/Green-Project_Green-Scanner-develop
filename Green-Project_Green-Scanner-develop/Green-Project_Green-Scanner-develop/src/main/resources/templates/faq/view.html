@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="fragments/qna_head :: qna_head('상세보기')">
+<body>
+	<nav th:replace="fragments/common.html :: nav-top"></nav>
+	<!-- 밑줄: 디자인 요소 다운하여 사용 -->
+	<div class="nav-border"></div>
+	<div class="board-cont-body">
+		<div class="board-cont-wrapper">
+			<div class="board-cont-top">
+				<div class="board-cont-top-main">
+					<span class="board-cont-top-title" th:text="${post.title}"></span>
+					<a href="/faq">목록으로 돌아가기</a>
+				</div>
+			</div>
+			<div class="content-border"></div>
+
+			<div class="cmt-feed-detail">
+				<div class="cmt-feed-detail-top">
+					<div class="feed-top-icon">
+						<img src="/img/profile.png">
+					</div>
+					<div class="feed-top-text">
+						<span class="feed-top-nickname" th:text="${post.nickname}"></span>
+						<span class="feed-top-post-time"
+							  th:text="${#dates.format(post.postdate, 'yyyy/MM/dd HH시 mm분')}"></span>
+					</div>
+				</div>
+				<div class="Content_div" th:text="${post.content}"></div>
+				<img class="img_100" th:if="${post.filename}"
+					 th:src="@{'/qna/display?filename='+${post.filename}}">
+
+			</div>
+		</div>
+	</div>
+	<div th:replace="/fragments/common.html :: new-footer"></div>
+</body>
+<link rel="stylesheet" href="../css/boardView.css">
+<link rel="stylesheet" href="../css/styles.css">
+</html>

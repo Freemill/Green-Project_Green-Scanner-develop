@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.garb.gbcollector.web.dao.FeedDAO">
+
+<resultMap type="FeedVO" id="feedResult">
+	<result property="feedNo" column="feed_no"/>
+	<result property="challengeNum" column="challengeNum"/>
+	<result property="challengeName" column="challengeName"/>
+	<result property="email" column="email"/>
+	<result property="writer" column="writer"/>
+	<result property="content" column="content"/>
+	<result property="postDate" column="post_date"/>
+	<result property="commentCnt" column="comment_cnt"/>
+	<result property="postTime" column="post_time"/>
+</resultMap>
+
+<select id="selectAllFeedList" parameterType="FeedPaginationVO" resultMap="feedResult">
+	<![CDATA[
+		select * 
+		from (
+				select row_number() over(order by post_time desc) num
+				, challengeFeed.*
+				from challengeFeed
+				order by post_time desc
+			 )
+		where num between to_number(#{startIdx}) and to_number(#{endIdx})	
+		order by post_time desc
+	]]>
+</select>
+
+<select id="selectMyFeedList" parameterType="FeedPaginationVO" resultMap="feedResult">
+	<![CDATA[
+		select * 
+		from (
+				select row_number() over(order by post_time desc) num
+				, challengeFeed.*
+				from challengeFeed
+				where challengeNum = #{challengeNum}
+				order by post_time desc
+			 )
+		where num between to_number(#{startIdx}) and to_number(#{endIdx})	
+		order by post_time desc
+	]]>
+</select>
+
+<select id="selectFeedDetail" parameterType="int" resultMap="feedResult">
+	<![CDATA[
+		select * from challengeFeed
+		where feed_no = #{feedNo}
+	]]>
+</select>
+
+<select id="duplicateCheck" parameterType="String" resultMap="feedResult">
+	<![CDATA[
+		select * from challengeFeed
+		where challengeNum = #{challengeNum}
+	]]>
+</select>
+
+<insert id="insertFeed" parameterType="FeedVO" useGeneratedKeys="true" keyColumn="feed_no" keyProperty="feedNo">
+	<![CDATA[
+		insert into challengeFeed (
+			feed_no, 
+			challengeNum,
+			challengeName, 
+			email, 
+			writer, 
+			content,
+			post_date
+		) values (
+			feedNo_SEQ.NEXTVAL, 
+			#{challengeNum},
+			#{challengeName}, 
+			#{email}, 
+			#{writer}, 
+			#{content}, 
+			#{postDate}
+		)
+	]]>
+</insert>
+
+<update id="updateFeed" parameterType="FeedVO">
+	<![CDATA[
+		update challengeFeed
+		set
+			writer = #{writer},
+			content = #{content}
+		where feed_no = #{feedNo}
+	]]>
+</update>
+
+<delete id="deleteFeed" parameterType="int">
+	<![CDATA[
+		delete from challengeFeed
+		where feed_no = #{feedNo}
+	]]>
+</delete>
+
+<select id="selectFeedTotalCount" resultType="int">
+	<![CDATA[
+		select count(*) from challengeFeed
+	]]>
+</select>
+
+<select id="selectMyFeedCount" parameterType="String" resultType="int">
+	<![CDATA[
+		select count(*) from challengeFeed
+		where challengeNum = #{challengeNum}
+	]]>
+</select>	
+
+</mapper>

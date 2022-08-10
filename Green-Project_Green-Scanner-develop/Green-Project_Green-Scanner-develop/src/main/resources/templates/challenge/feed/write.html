@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/fragments/common.html :: header('피드 쓰기')">
+<body>
+	<nav th:replace="fragments/common.html :: nav-top"></nav>
+	<!-- content 영역 -->
+	<div class="chall-cont-body">
+		<div class="chall-cont-wrapper">
+			<div class="chall-cont-top">
+				<div class="chall-main-link"><a href="/challenge/main"><img src="/img/challenge/home.png">챌린지 홈</a></div>
+				<span class="chall-cont-top-title">피드쓰기</span>
+			</div>
+			<div class="content-border"></div>
+			<div class="chall-feed-write-wrapper">
+				<form
+					id="feed-write-form"
+					th:action="@{/challenge/feed/{challengeNum} (challengeNum = ${challengeNum}, challengeName = ${challengeName})}"
+					enctype="multipart/form-data"
+					onsubmit="return fn_write_confirm()"
+					th:object="${feed}"
+					method="post">
+					<span class="chall-cont-min-title" th:text="${challengeName}"></span>
+					<input type="hidden" th:if="*{feedNo != null and feedNo > 0}" th:field="*{feedNo}">
+					<input type="hidden" th:field="*{changeYn}" value="N">
+					<input type="hidden" th:if="*{writer != null}" th:field="*{writer}">
+					<!-- 업로드 이미지가 존재하지 않을 경우 -->
+					<div th:if="${#lists.isEmpty(imageList)}" class="chall-feed-write-img-preview">
+						<div class="feed-img-div" id="feed-img-div-0">
+							<input type="file" id="feed-img-0" name="images" accept=".jpg, .jpeg, .png" onchange="previewImg(this)">
+							<label for="feed-img-0" class="feed-img-add">사진추가</label>
+							<div class="img-prev-div"></div>
+						</div>
+					</div>
+					<!-- 업로드 이미지가 존재할 경우 -->
+					<div th:unless="${#lists.isEmpty(imageList)}" class="chall-feed-write-img-preview">
+						<div th:each="img, stat : ${imageList}" class="feed-img-div" th:id="|feed-img-div-${stat.index}|">
+							<input type="hidden" name="imageIdxs" th:value="${img.idx}">
+							<input type="file" th:id="|feed-img-${stat.index}|" name="images" accept=".jpg, .jpeg, .png" onchange="previewImg(this)">
+							<div class="img-prev-div"><img th:src="|/challenge/feed/${img.feedNo}/img/${img.idx}|"></div>
+							<button type='button' class='feed-img-remove' onclick='removeImg(this)'>사진삭제</button>
+						</div>
+						<div th:if="${#lists.size(imageList) < 3}" class="feed-img-div" th:id="|feed-img-div-${#lists.size(imageList)}|">
+							<input type="file" th:id="|feed-img-${#lists.size(imageList)}|" name="images" accept=".jpg, .jpeg, .png" onchange="previewImg(this)">
+							<label th:for="|feed-img-${#lists.size(imageList)}|" class="feed-img-add">사진추가</label>
+							<div class="img-prev-div"></div>
+						</div>
+					</div>
+					<div class="feed-cont-textarea-div">
+						<textarea th:field="*{content}" onkeyup="fn_checkByte(this)" placeholder="내용을 입력해주세요."></textarea>
+						<sup>(<span id="nowByte">0</span>/1000bytes)</sup>
+					</div>
+					<div class="chall-cont-min-border"></div>
+					<div class="chall-form-btns">
+						<input id="cancle-btn" type="reset" value="취소">
+						<input id="complete-btn" type="submit" value="완료">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- 하단 footer -->
+	<div th:replace="/fragments/common.html :: new-footer"></div>
+	
+	<script th:inline="javascript">
+	/*<![CDATA[*/
+	const imgList = /*[[${imageList}]]*/;
+	let imageIdx = isEmpty(imgList) ? 0 : imgList.length;
+	
+	function previewImg(fileInput) {
+		const file = $(fileInput);
+		const fileDiv = file.parent();
+		const maxSize = 5 * 1024 * 1024;
+		var reader = new FileReader();
+		
+		reader.addEventListener('load', function() {
+			const image = new Image();
+			const removeBtn = `<button type='button' class='feed-img-remove' onclick='removeImg(this)'>사진삭제</button>`;
+			file.nextAll('label').remove();
+			$(image).attr('src', reader.result);
+			$(image).appendTo(file.nextAll('.img-prev-div'));
+			$('#changeYn').val('Y');
+			$(removeBtn).appendTo(fileDiv);
+			createImgDiv();
+		});
+		
+		if(file[0].files[0].size < maxSize) {
+			reader.readAsDataURL(file[0].files[0]);	
+		} else {
+			alert("첨부 사진의 크기를 확인해주세요.\n첨부 사진은 5MB 이내로 등록이 가능합니다.");
+			file.val("");
+		}
+	}
+	
+	function createImgDiv() {
+		const imgDivs = $('.feed-img-div');
+		if(imgDivs.length > 2) {
+			return false;
+		}
+		
+		imageIdx++;
+		const newDiv = `
+			<div class="feed-img-div" id="feed-img-div-${imageIdx}">
+				<input type="file" id="feed-img-${imageIdx}" name="images" accept=".jpg, .jpeg, .png" onchange="previewImg(this)">
+				<label for="feed-img-${imageIdx}" class="feed-img-add">사진추가</label>
+				<div class="img-prev-div"></div>
+			</div>
+			`;
+		$(newDiv).appendTo('.chall-feed-write-img-preview');
+	}
+	
+	function removeImg(button) {
+		const removeBtn = $(button);
+		const fileDiv = removeBtn.parent();		
+		fileDiv.remove();
+		$('#changeYn').val('Y');
+		
+		const imgDivs = $('.feed-img-div');
+		if(imgDivs.length === 2) {
+			const lastImg = imgDivs.last().children('input[type="file"]').val();
+			if(lastImg) {
+				createImgDiv();
+			} else {
+				const lastImgIdx = $(".feed-img-div").last().children("input[type='hidden']").val();
+				if(lastImgIdx) createImgDiv();
+			}		
+		}
+	}
+	
+	function isEmpty(imgList) {
+		if(imgList === null ) {
+			return true;
+		} else {
+			if(imgList.constructor === Object &&
+				Object.keys(imgList).length === 0) {
+				return true;
+			}
+			return false;
+		}		
+	}
+	/*]]>*/
+	</script>
+</body>
+</html>

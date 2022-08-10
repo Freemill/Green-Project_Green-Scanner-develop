@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.garb.gbcollector.web.dao.BoardDAO">
+
+	<resultMap type="BoardVO" id="boardResult">
+		<result property="boardname" column="boardname" />
+		<result property="postno" column="postno" />
+		<result property="parentno" column="parentno" />
+		<result property="title" column="title" />
+		<result property="content" column="content" />
+		<result property="postdate" column="postdate" />
+		<result property="filename" column="filename" />
+		<result property="id" column="id" />
+		<result property="nickname" column="nickname" />
+		<result property="reply_cnt" column="reply_cnt" />
+	</resultMap>
+
+	<parameterMap type="BoardPageNationVO" id="boardPageNationVO">
+		<parameter property="startIdx"/>
+		<parameter property="endIdx" />
+		<parameter property="postno" />
+	</parameterMap>
+	
+	<resultMap type="BoardReplyVO" id="replyResult">
+		<result property="postno" column="postno" />
+		<result property="reno" column="reno" />
+		<result property="rememo" column="rememo" />
+		<result property="nickname" column="nickname" />
+		<result property="redate" column="redate" />
+	</resultMap>
+	
+	
+	<!-- 댓글 갯수 갱신 -->
+	<update id="updateReplyCnt">
+		<![CDATA[
+			update board
+			set reply_cnt=reply_cnt + #{amount}
+			where postno=#{postno}
+		]]>
+	</update>
+	
+	<!-- 댓글의 게시글 번호 조회 -->
+	<select id="getPostno" resultType="int">
+		<![CDATA[
+			select postno 
+			from boardreply 
+			where reno = #{reno}			
+		]]>
+	</select>	
+	
+	
+	<!-- 전체게시판 -->
+	<!-- 자유게시판 글 리스트 출력 -->
+	<select id="listPostB" resultMap="boardResult">
+		<![CDATA[
+			select * from board where boardname = '자유게시판' order by postno desc
+		]]>
+	</select>
+	
+	<!-- 질문게시판 글 리스트 출력 -->
+	<select id="listPostQ" resultMap="boardResult">
+		<![CDATA[
+			select * from board where boardname = '질문게시판' order by postdate desc
+		]]>
+	</select>
+	<!-- ################################################################################## -->
+	
+	
+	<!-- 개별 게시판 -->
+	
+	<!-- 게시판별 전체게시글 수 조회 -->
+	<select id="selectTotalBoardCnt" resultType="int">
+		<![CDATA[
+			select count(*) from board where boardname = #{boardname}
+		]]>
+	</select>
+	
+	<!-- 자유게시판 글 리스트 전체 출력 -->
+	<select id="listPostBAll" resultMap="boardResult" parameterType="boardPageNationVO">
+		<![CDATA[			
+			select * from (
+							select 
+								row_number() over(order by postdate desc) num, 
+								board.*
+							from board
+							where boardname = '자유게시판'
+			 				)
+			where boardname = '자유게시판' and num between to_number(#{startIdx}) and to_number(#{endIdx})
+			order by postdate desc
+		]]>
+	</select>	
+
+	<!-- 질문게시판 글 리스트 전체 출력 -->
+	<select id="listPostQAll" resultMap="boardResult" parameterType="boardPageNationVO">
+		<![CDATA[
+		select * from (
+						  select
+							  row_number() over(order by postdate desc) num,
+								  board.*
+						  from board
+						  where boardname = '질문게시판'
+					  )
+		where boardname = '질문게시판' and num between to_number(#{startIdx}) and to_number(#{endIdx})
+		order by postdate desc
+		]]>
+	</select>
+	
+	
+	
+	<!-- 글쓰기 -->
+	<insert id="insertPost" parameterType="boardVO">
+		<![CDATA[
+			insert into 
+			board(boardname, title, content, nickname, isanon, filename) 
+			values 
+			(#{boardname}, #{title}, #{content}, #{nickname}, #{isanon}, #{filename, jdbcType = VARCHAR})
+		]]>
+	</insert>
+	
+	<!-- 게시글 보기 -->
+	<select id="viewPost" resultType="boardVO" parameterType="int">
+		<![CDATA[
+			select * from board 
+			where postno=#{postno}
+		]]>
+	</select>
+	
+	<!-- 글 삭제 -->
+	<delete id="deletePost" parameterType="int">
+		<![CDATA[
+			delete
+			from board 
+			where postno=#{postno}
+		]]>
+	</delete>
+	
+	<!-- 게시글 수정 -->
+	<update id="updatePost" parameterType="boardVO">
+		<![CDATA[
+			update board
+			set boardname=#{boardname},
+				title=#{title},
+				content=#{content},	
+				nickname=#{nickname},
+				isanon=#{isanon},
+				filename=#{filename, jdbcType = VARCHAR}			
+			where postno=#{postno}
+		]]>
+	</update>
+	
+	
+	<!-- ########################################################### -->
+	
+	<!-- 댓글 -->
+	<!-- 댓글 등록 -->
+	<insert id="insertBoardReply" parameterType="boardReplyVO">
+		<![CDATA[
+			insert into 
+			boardreply(postno, nickname, rememo) 
+			values 
+			(#{postno}, #{nickname},#{rememo})
+		]]>
+	</insert>
+	
+	<!-- 특정 댓글 출력 -->
+	<select id="getCommentDetail" resultMap="replyResult" parameterType="int">
+		<![CDATA[
+			select * from boardreply 
+			where reno=#{reno}
+		]]>
+	</select>
+	
+	<update id="updateComment" parameterType="boardReplyVO">
+		<![CDATA[
+			update boardreply
+			set
+				rememo=#{rememo}
+			where 
+				reno=#{reno}
+		]]>
+	</update>
+	
+	
+	
+	<!-- 댓글 리스트 출력 -->
+	<select id="viewReply" resultMap="replyResult" parameterType="int">
+		<![CDATA[
+			select * from boardreply 
+			where postno=#{postno}
+			order by redate desc
+		]]>
+	</select>
+	
+	<!-- 댓글 삭제 -->
+	<delete id="deleteReply" parameterType="int">
+		<![CDATA[
+			delete
+			from boardreply 
+			where reno=#{reno}
+		]]>
+	</delete>
+	
+	<!-- 댓글 수정 -->
+	<update id="updateReply" parameterType="boardReplyVO">
+		<![CDATA[
+			update boardreply 
+			set rememo=#{rememo}
+			where reno=#{reno}
+		]]>
+	</update>
+	
+</mapper>
+
