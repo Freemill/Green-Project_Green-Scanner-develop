@@ -65,7 +65,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<insert id="googlememberInsert" parameterType="memberVO">
 			<![CDATA[
 			insert into member(email,password,name,nickname,googleid)
-			values(LOWER(#{mememail}),PACK_ENCRYPTION_DECRYPTION.FUNC_ENCRYPT(#{mempw}),#{memname},#{memnickname},#{googlememid})
+			values(#{mememail},#{mempw},#{memname},#{memnickname},#{googlememid})
 			]]>
 		</insert>
 
@@ -89,7 +89,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<insert id="navermemberInsert" parameterType="memberVO">
 			<![CDATA[
 			insert into member(email,password,name,nickname,navermemid)
-			values(LOWER(#{mememail}),PACK_ENCRYPTION_DECRYPTION.FUNC_ENCRYPT(#{mempw}),#{memname},#{memnickname},#{navermemid})
+			values(#{mememail},#{mempw},#{memname},#{memnickname},#{navermemid})
 			]]>
 		</insert>
 
@@ -119,7 +119,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<!-- eclipse에서 암호화해 넣을 수 있는 코드 (AI활용 프로젝트-> DB)참조 -->
 		<select id="login" resultType="map" parameterType="memberVO">
 			<![CDATA[
-				select nickname, name from member where email=#{mememail} and password=PACK_ENCRYPTION_DECRYPTION.FUNC_ENCRYPT(#{mempw})
+				select nickname, name from member where email=#{mememail} and password=UTL_RAW.CAST_TO_RAW(#{mempw})
 			]]>
 		</select>
 	
@@ -128,7 +128,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<insert id="memberInsert" parameterType="memberVO" >
 		<![CDATA[
 			insert into member(email,password,name,nickname) 
-			values(LOWER(#{mememail}),PACK_ENCRYPTION_DECRYPTION.FUNC_ENCRYPT(#{mempw}),#{memname},#{memnickname})
+			values(#{mememail}, UTL_RAW.CAST_TO_RAW(#{mempw}),#{memname},#{memnickname})
 		]]>
 	</insert>
 	
