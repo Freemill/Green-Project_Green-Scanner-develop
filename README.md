@@ -1,4 +1,4 @@
-# Greenscanner
+# Greenscanner portfolio
 
 ![image](https://user-images.githubusercontent.com/76586084/189648845-db3c095a-c63e-43d5-b759-8bc04aa3af15.png)
 
